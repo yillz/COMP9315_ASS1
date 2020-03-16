@@ -28,9 +28,9 @@ typedef struct pName
 	char givenName[FLEXIBLE_ARRAY_MEMBER];
 } pName;
 
-static int checkName(char *name);
+// static int checkName(char *name);
 
-static int compareNames(pName *a, pName *b);
+// static int compareNames(pName *a, pName *b);
 
 static bool checkName(char *name){
 	int cflags = REG_EXTENDED;
@@ -62,6 +62,7 @@ static char *removeFirstSpace(char *name){
  * Input/Output functions
  *****************************************************************************/
 
+// Input function
 PG_FUNCTION_INFO_V1(pname_in);
 
 Datum
@@ -106,6 +107,8 @@ pname_in(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+
+// output function
 PG_FUNCTION_INFO_V1(pname_out);
 
 Datum
@@ -134,16 +137,9 @@ pname_out(PG_FUNCTION_ARGS)
 #define Mag(c)	((c)->x*(c)->x + (c)->y*(c)->y)
 
 static int
-complex_abs_cmp_internal(Complex * a, Complex * b)
+pname_cmp(pName * a, pName * b)
 {
-	double		amag = Mag(a),
-				bmag = Mag(b);
-
-	if (amag < bmag)
-		return -1;
-	if (amag > bmag)
-		return 1;
-	return 0;
+	
 }
 
 

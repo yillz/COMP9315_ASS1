@@ -22,15 +22,14 @@ PG_MODULE_MAGIC;
 typedef struct PersonName
 {
     int length;
-	// char familyName[FLEXIBLE_ARRAY_MEMBER];
-	// char givenName[FLEXIBLE_ARRAY_MEMBER];
 	char *familyName;
 	char *givenName;
 } PersonName;
 
 
 // define a function to check if name is valid
-static bool checkName(char *name){
+static bool 
+checkName(char *name){
 	int cflags = REG_EXTENDED;
 	regex_t reg;
 	bool ret = true;
@@ -81,7 +80,6 @@ pname_in(PG_FUNCTION_ARGS)
 	// set VARSIZE
 	SET_VARSIZE(result, VARHDRSZ + new_pname_size);
 
-
 	// locate pointer
 	result->familyName = result + VARHDRSZ；
 	result->givenName = result->familyName + strlen(familyName) + 1；
@@ -111,7 +109,8 @@ pname_out(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Operator define
  *****************************************************************************/
-static int compareNames(PersonName *a, PersonName *b){
+static int 
+compareNames(PersonName *a, PersonName *b){
 	//waiting for Mark 
 	int result = strcmp(a->familyName, b->familyName);
 
@@ -122,55 +121,7 @@ static int compareNames(PersonName *a, PersonName *b){
 	return result;
 }
 
-// 1. Equal function
-PG_FUNCTION_INFO_V1(pname_equal);
-
-Datum
-pname_equal(PG_FUNCTION_ARGS)
-{
-	PersonName    *a = (PersonName *) PG_GETARG_POINTER(0);
-	PersonName    *b = (PersonName *) PG_GETARG_POINTER(1);
-
-	PG_RETURN_BOOL(compareNames(a, b) == 0);
-}
-
-// 2. Greater function
-PG_FUNCTION_INFO_V1(pname_greater);
-
-Datum
-pname_greater(PG_FUNCTION_ARGS)
-{
-	PersonName    *a = (PersonName *) PG_GETARG_POINTER(0);
-	PersonName    *b = (PersonName *) PG_GETARG_POINTER(1);
-
-	PG_RETURN_BOOL(compareNames(a, b) > 0);
-}
-
-// 3. not equal function
-PG_FUNCTION_INFO_V1(pname_not_equal);
-
-Datum
-pname_not_equal(PG_FUNCTION_ARGS)
-{
-	PersonName    *a = (PersonName *) PG_GETARG_POINTER(0);
-	PersonName    *b = (PersonName *) PG_GETARG_POINTER(1);
-
-	PG_RETURN_BOOL(compareNames(a, b) != 0);
-}
-
-// 4. greater equal function
-PG_FUNCTION_INFO_V1(pname_greater_equal);
-
-Datum
-pname_greater_equal(PG_FUNCTION_ARGS)
-{
-	PersonName    *a = (PersonName *) PG_GETARG_POINTER(0);
-	PersonName    *b = (PersonName *) PG_GETARG_POINTER(1);
-
-	PG_RETURN_BOOL(compareNames(a, b) >= 0);
-}
-
-// 5. less function
+// 1. less function
 PG_FUNCTION_INFO_V1(pname_less);
 
 Datum
@@ -182,7 +133,7 @@ pname_less(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(compareNames(a, b) < 0);
 }
 
-// 6. less equal function
+// 2. less equal function
 PG_FUNCTION_INFO_V1(pname_less_equal);
 
 Datum
@@ -194,6 +145,65 @@ pname_less_equal(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(compareNames(a, b) <= 0);
 }
 
+// 3. Equal function
+PG_FUNCTION_INFO_V1(pname_equal);
+
+Datum
+pname_equal(PG_FUNCTION_ARGS)
+{
+	PersonName    *a = (PersonName *) PG_GETARG_POINTER(0);
+	PersonName    *b = (PersonName *) PG_GETARG_POINTER(1);
+
+	PG_RETURN_BOOL(compareNames(a, b) == 0);
+}
+
+// 4. not equal function
+PG_FUNCTION_INFO_V1(pname_not_equal);
+
+Datum
+pname_not_equal(PG_FUNCTION_ARGS)
+{
+	PersonName    *a = (PersonName *) PG_GETARG_POINTER(0);
+	PersonName    *b = (PersonName *) PG_GETARG_POINTER(1);
+
+	PG_RETURN_BOOL(compareNames(a, b) != 0);
+}
+
+// 5. Greater function
+PG_FUNCTION_INFO_V1(pname_greater);
+
+Datum
+pname_greater(PG_FUNCTION_ARGS)
+{
+	PersonName    *a = (PersonName *) PG_GETARG_POINTER(0);
+	PersonName    *b = (PersonName *) PG_GETARG_POINTER(1);
+
+	PG_RETURN_BOOL(compareNames(a, b) > 0);
+}
+
+// 6. greater equal function
+PG_FUNCTION_INFO_V1(pname_greater_equal);
+
+Datum
+pname_greater_equal(PG_FUNCTION_ARGS)
+{
+	PersonName    *a = (PersonName *) PG_GETARG_POINTER(0);
+	PersonName    *b = (PersonName *) PG_GETARG_POINTER(1);
+
+	PG_RETURN_BOOL(compareNames(a, b) >= 0);
+}
+
+// 7.compare function
+PG_FUNCTION_INFO_V1(pname_cmp)
+
+Datum
+pname_cmp(PG_FUNCTION_ARGS) 
+{
+	PersonName    *a = (PersonName *) PG_GETARG_POINTER(0);
+	PersonName    *b = (PersonName *) PG_GETARG_POINTER(1);
+
+	PG_RETURN_INT32(compareNames(a, b));
+}
 
 /*****************************************************************************
  * Functions
@@ -244,7 +254,7 @@ show(PG_FUNCTION_ARGS) {
 PG_FUNCTION_INFO_V1(pname_hash);
 
 Datum
-pname_hash(PG_FUNCTION_ARGS)
+hash(PG_FUNCTION_ARGS)
 {
 	PersonName *a = (PersonName *) PG_GETARG_POINTER(0);
 	char       *str;

@@ -205,7 +205,7 @@ pname_less(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(compareNames(a, b) < 0);
 }
 
-// 56. less equal function
+// 6. less equal function
 PG_FUNCTION_INFO_V1(pname_less_equal);
 
 Datum

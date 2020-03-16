@@ -115,7 +115,7 @@ pname_out(PG_FUNCTION_ARGS)
 	pName *fullname = (pName *) PG_GETARG_POINTER(0);
 	char  *result;
 
-	result = psprintf("(%s,%s)", fullname->familyName, fullname->givenName);
+	result = psprintf("%s,%s", fullname->familyName, fullname->givenName);
 	PG_RETURN_CSTRING(result);
 }
 
@@ -132,21 +132,10 @@ pname_out(PG_FUNCTION_ARGS)
  * an internal three-way-comparison function, as we do here.
  *****************************************************************************/
 
-#define Mag(c)	((c)->x*(c)->x + (c)->y*(c)->y)
 
-static int
-complex_abs_cmp_internal(Complex * a, Complex * b)
-{
-	double		amag = Mag(a),
-				bmag = Mag(b);
-
-	if (amag < bmag)
-		return -1;
-	if (amag > bmag)
-		return 1;
-	return 0;
+static int compareNames(pName *a, pName *b){
+	//waiting for Mark 
 }
-
 
 PG_FUNCTION_INFO_V1(complex_abs_lt);
 

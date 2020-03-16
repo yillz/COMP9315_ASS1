@@ -22,15 +22,14 @@ PG_MODULE_MAGIC;
 typedef struct pName
 {
     int length;
-	// can I use poniter here
-	// or familyName[] ?
+
 	char familyName[FLEXIBLE_ARRAY_MEMBER];
 	char givenName[FLEXIBLE_ARRAY_MEMBER];
 } pName;
 
-static int checkName(char *name);
+// static int checkName(char *name);
 
-static int compareNames(pName *a, pName *b);
+// static int compareNames(pName *a, pName *b);
 
 static bool checkName(char *name){
 	int cflags = REG_EXTENDED;
@@ -62,6 +61,7 @@ static bool checkName(char *name){
  * Input/Output functions
  *****************************************************************************/
 
+// Input function
 PG_FUNCTION_INFO_V1(pname_in);
 
 Datum
@@ -107,6 +107,8 @@ pname_in(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+
+// output function
 PG_FUNCTION_INFO_V1(pname_out);
 
 Datum
@@ -123,82 +125,124 @@ pname_out(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Operator class for defining B-tree index
- *
- * It's essential that the comparison operators and support function for a
- * B-tree index opclass always agree on the relative ordering of any two
- * data values.  Experience has shown that it's depressingly easy to write
- * unintentionally inconsistent functions.  One way to reduce the odds of
- * making a mistake is to make all the functions simple wrappers around
- * an internal three-way-comparison function, as we do here.
  *****************************************************************************/
 
-
+// function to compare strings
 static int compareNames(pName *a, pName *b){
 	//waiting for Mark 
+	int result = strcmp(a->familyName, b->familyName);
+
+	if (result == 0){
+		result = strcmp(a->givenName, b->givenName);
+	}
+
+	return result;
 }
 
-PG_FUNCTION_INFO_V1(complex_abs_lt);
+// 1. Equal function
+PG_FUNCTION_INFO_V1(pname_equal);
 
 Datum
-complex_abs_lt(PG_FUNCTION_ARGS)
+pname_equal(PG_FUNCTION_ARGS)
 {
-	Complex    *a = (Complex *) PG_GETARG_POINTER(0);
-	Complex    *b = (Complex *) PG_GETARG_POINTER(1);
+	pName    *a = (pName *) PG_GETARG_POINTER(0);
+	pName    *b = (pName *) PG_GETARG_POINTER(1);
 
-	PG_RETURN_BOOL(complex_abs_cmp_internal(a, b) < 0);
+	PG_RETURN_BOOL(compareNames(a, b) == 0);
 }
 
-PG_FUNCTION_INFO_V1(complex_abs_le);
+// 2. Greater function
+PG_FUNCTION_INFO_V1(pname_greater);
 
 Datum
-complex_abs_le(PG_FUNCTION_ARGS)
+pname_greater(PG_FUNCTION_ARGS)
 {
-	Complex    *a = (Complex *) PG_GETARG_POINTER(0);
-	Complex    *b = (Complex *) PG_GETARG_POINTER(1);
+	pName    *a = (pName *) PG_GETARG_POINTER(0);
+	pName    *b = (pName *) PG_GETARG_POINTER(1);
 
-	PG_RETURN_BOOL(complex_abs_cmp_internal(a, b) <= 0);
+	PG_RETURN_BOOL(compareNames(a, b) > 0);
 }
 
-PG_FUNCTION_INFO_V1(complex_abs_eq);
+// 3. not equal function
+PG_FUNCTION_INFO_V1(pname_not_equal);
 
 Datum
-complex_abs_eq(PG_FUNCTION_ARGS)
+pname_not_equal(PG_FUNCTION_ARGS)
 {
-	Complex    *a = (Complex *) PG_GETARG_POINTER(0);
-	Complex    *b = (Complex *) PG_GETARG_POINTER(1);
+	pName    *a = (pName *) PG_GETARG_POINTER(0);
+	pName    *b = (pName *) PG_GETARG_POINTER(1);
 
-	PG_RETURN_BOOL(complex_abs_cmp_internal(a, b) == 0);
+	PG_RETURN_BOOL(compareNames(a, b) != 0);
 }
 
-PG_FUNCTION_INFO_V1(complex_abs_ge);
+// 4. greater equal function
+PG_FUNCTION_INFO_V1(pname_greater_equal);
 
 Datum
-complex_abs_ge(PG_FUNCTION_ARGS)
+pname_greater_equal(PG_FUNCTION_ARGS)
 {
-	Complex    *a = (Complex *) PG_GETARG_POINTER(0);
-	Complex    *b = (Complex *) PG_GETARG_POINTER(1);
+	pName    *a = (pName *) PG_GETARG_POINTER(0);
+	pName    *b = (pName *) PG_GETARG_POINTER(1);
 
-	PG_RETURN_BOOL(complex_abs_cmp_internal(a, b) >= 0);
+	PG_RETURN_BOOL(compareNames(a, b) >= 0);
 }
 
-PG_FUNCTION_INFO_V1(complex_abs_gt);
+// 5. less function
+PG_FUNCTION_INFO_V1(pname_less);
 
 Datum
-complex_abs_gt(PG_FUNCTION_ARGS)
+pname_less(PG_FUNCTION_ARGS)
 {
-	Complex    *a = (Complex *) PG_GETARG_POINTER(0);
-	Complex    *b = (Complex *) PG_GETARG_POINTER(1);
+	pName    *a = (pName *) PG_GETARG_POINTER(0);
+	pName    *b = (pName *) PG_GETARG_POINTER(1);
 
-	PG_RETURN_BOOL(complex_abs_cmp_internal(a, b) > 0);
+	PG_RETURN_BOOL(compareNames(a, b) < 0);
 }
 
-PG_FUNCTION_INFO_V1(complex_abs_cmp);
+// 6. less equal function
+PG_FUNCTION_INFO_V1(pname_less_equal);
 
 Datum
-complex_abs_cmp(PG_FUNCTION_ARGS)
+pname_less_equal(PG_FUNCTION_ARGS)
 {
-	Complex    *a = (Complex *) PG_GETARG_POINTER(0);
-	Complex    *b = (Complex *) PG_GETARG_POINTER(1);
+	pName    *a = (pName *) PG_GETARG_POINTER(0);
+	pName    *b = (pName *) PG_GETARG_POINTER(1);
 
-	PG_RETURN_INT32(complex_abs_cmp_internal(a, b));
+	PG_RETURN_BOOL(compareNames(a, b) <= 0);
+}
+
+/*****************************************************************************
+ * Functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(family);
+
+Datum
+family(PG_FUNCTION_ARGS) {
+	pName *fullname = (pName *) PG_GETARG_POINTER(0);
+
+	char *family;
+	family = psprintf("%s", fullname->familyName);
+	PG_RETURN_CSTRING(family);
+}
+
+PG_FUNCTION_INFO_V1(given);
+
+Datum
+given(PG_FUNCTION_ARGS) {
+	pName *fullname = (pName *) PG_GETARG_POINTER(0);
+
+	char *given;
+	given = psprintf("%s", fullname->givenName);
+	PG_RETURN_CSTRING(given);
+}
+
+PG_FUNCTION_INFO_V1(show);
+
+Datum
+show(PG_FUNCTION_ARGS) {
+	pName *fullname = (pName *) PG_GETARG_POINTER(0);
+	char *showName;
+	char *
+
 }

@@ -264,6 +264,12 @@ Datum
 show(PG_FUNCTION_ARGS) {
 	pName *fullname = (pName *) PG_GETARG_POINTER(0);
 	char *showName;
-	char *
+	char * firstGivenName;
+	char *delim = " ";
 
+	//get the first given name
+	firstGivenName = strtok(fullname->givenName, delim); 
+	showName = psprintf("%s %s", firstGivenName, fullname->familyName);
+
+	PG_RETURN_CSTRING(showName);
 }

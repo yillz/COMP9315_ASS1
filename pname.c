@@ -50,13 +50,13 @@ static bool checkName(char *name){
 }
 
 // remove the first space of a name if its first char is a space
-static char *removeFirstSpace(char *name){
+/*static char *removeFirstSpace(char *name){
 	char *new_name = name;
 	if (*name == ' '){
 		new_name++;
 	}
 	return new_name;
-}
+}*/
 
 /*****************************************************************************
  * Input/Output functions
@@ -69,8 +69,9 @@ Datum
 pname_in(PG_FUNCTION_ARGS)
 {
 	char *NameIn = PG_GETARG_CSTRING(0);
-	char *familyName, 
-		 *givenName;
+	char familyName[100], 
+		 givenName[100];
+		 punct[10];
 
 	if (checkName(NameIn) == false){
 		ereport(ERROR,
@@ -79,10 +80,10 @@ pname_in(PG_FUNCTION_ARGS)
 	}
 
 	// scan the input string and set familyName, givenName
-	sscanf(NameIn, "%s,%s", familyName, givenName);
+	sscanf(NameIn, "%[A-Za-z' -]%[, ]%[A-Za-z' -]", familyName, punct, givenName);
 
 	// check if the given name start with a space
-	givenName = removeFirstSpace(givenName);
+	//givenName = removeFirstSpace(givenName);
 
 	// set new pname object's size , +2 for 2"\0"
 	int32 new_pname_size = strlen(familyName) + strlen(givenName) + 2;
@@ -117,7 +118,7 @@ pname_out(PG_FUNCTION_ARGS)
 	pName *fullname = (pName *) PG_GETARG_POINTER(0);
 	char  *result;
 
-	result = psprintf("(%s,%s)", fullname->familyName, fullname->givenName);
+	result = psprintf("%s,%s", fullname->familyName, fullname->givenName);
 	PG_RETURN_CSTRING(result);
 }
 
@@ -134,14 +135,10 @@ pname_out(PG_FUNCTION_ARGS)
  * an internal three-way-comparison function, as we do here.
  *****************************************************************************/
 
-#define Mag(c)	((c)->x*(c)->x + (c)->y*(c)->y)
 
-static int
-pname_cmp(pName * a, pName * b)
-{
-	
+static int compareNames(pName *a, pName *b){
+	//waiting for Mark 
 }
-
 
 PG_FUNCTION_INFO_V1(complex_abs_lt);
 

@@ -47,14 +47,6 @@ static bool checkName(char *name){
 	return ret;
 }
 
-// remove the first space of a name if its first char is a space
-/*static char *removeFirstSpace(char *name){
-	char *new_name = name;
-	if (*name == ' '){
-		new_name++;
-	}
-	return new_name;
-}*/
 
 /*****************************************************************************
  * Input/Output functions
@@ -202,29 +194,6 @@ pname_less_equal(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(compareNames(a, b) <= 0);
 }
 
-/*****************************************************************************
- * Hash function define
- *****************************************************************************/
-PG_FUNCTION_INFO_V1(pname_hash);
-
-Datum
-pname_hash(PG_FUNCTION_ARGS)
-{
-	PersonName *a = (PersonName *) PG_GETARG_POINTER(0);
-	char       *str;
-	Datum      result;
-
-	str = psprintf("%s,%s", a->familyName, a->givenName);
-	result = hash_any((unsigned char *) str, strlen(str));
-	pfree(str);
-
-	/* Avoid leaking memory for toasted inputs */
-	PG_FREE_IF_COPY(a, 0);
-	
-	PG_RETURN_DATUM(result);
-}
-
-
 
 /*****************************************************************************
  * Functions
@@ -266,4 +235,27 @@ show(PG_FUNCTION_ARGS) {
 	showName = psprintf("%s %s", firstGivenName, fullname->familyName);
 
 	PG_RETURN_CSTRING(showName);
+}
+
+
+/*****************************************************************************
+ * Hash function define
+ *****************************************************************************/
+PG_FUNCTION_INFO_V1(pname_hash);
+
+Datum
+pname_hash(PG_FUNCTION_ARGS)
+{
+	PersonName *a = (PersonName *) PG_GETARG_POINTER(0);
+	char       *str;
+	Datum      result;
+
+	str = psprintf("%s,%s", a->familyName, a->givenName);
+	result = hash_any((unsigned char *) str, strlen(str));
+	pfree(str);
+
+	/* Avoid leaking memory for toasted inputs */
+	PG_FREE_IF_COPY(a, 0);
+	
+	PG_RETURN_DATUM(result);
 }

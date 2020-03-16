@@ -135,73 +135,86 @@ pname_out(PG_FUNCTION_ARGS)
  * an internal three-way-comparison function, as we do here.
  *****************************************************************************/
 
-
+// function to compare strings
 static int compareNames(pName *a, pName *b){
 	//waiting for Mark 
+	int result = strcmp(a->familyName, b->familyName);
+
+	if (result == 0){
+		result = strcmp(a->givenName, b->givenName);
+	}
+
+	return result;
 }
 
-PG_FUNCTION_INFO_V1(complex_abs_lt);
+// 1. Equal function
+PG_FUNCTION_INFO_V1(pname_equal);
 
 Datum
-complex_abs_lt(PG_FUNCTION_ARGS)
+pname_equal(PG_FUNCTION_ARGS)
 {
-	Complex    *a = (Complex *) PG_GETARG_POINTER(0);
-	Complex    *b = (Complex *) PG_GETARG_POINTER(1);
+	pName    *a = (pName *) PG_GETARG_POINTER(0);
+	pName    *b = (pName *) PG_GETARG_POINTER(1);
 
-	PG_RETURN_BOOL(complex_abs_cmp_internal(a, b) < 0);
+	PG_RETURN_BOOL(compareNames(a, b) == 0);
 }
 
-PG_FUNCTION_INFO_V1(complex_abs_le);
+// 2. Greater function
+PG_FUNCTION_INFO_V1(pname_greater);
 
 Datum
-complex_abs_le(PG_FUNCTION_ARGS)
+pname_greater(PG_FUNCTION_ARGS)
 {
-	Complex    *a = (Complex *) PG_GETARG_POINTER(0);
-	Complex    *b = (Complex *) PG_GETARG_POINTER(1);
+	pName    *a = (pName *) PG_GETARG_POINTER(0);
+	pName    *b = (pName *) PG_GETARG_POINTER(1);
 
-	PG_RETURN_BOOL(complex_abs_cmp_internal(a, b) <= 0);
+	PG_RETURN_BOOL(compareNames(a, b) > 0);
 }
 
-PG_FUNCTION_INFO_V1(complex_abs_eq);
+// 3. not equal function
+PG_FUNCTION_INFO_V1(pname_not_equal);
 
 Datum
-complex_abs_eq(PG_FUNCTION_ARGS)
+pname_not_equal(PG_FUNCTION_ARGS)
 {
-	Complex    *a = (Complex *) PG_GETARG_POINTER(0);
-	Complex    *b = (Complex *) PG_GETARG_POINTER(1);
+	pName    *a = (pName *) PG_GETARG_POINTER(0);
+	pName    *b = (pName *) PG_GETARG_POINTER(1);
 
-	PG_RETURN_BOOL(complex_abs_cmp_internal(a, b) == 0);
+	PG_RETURN_BOOL(compareNames(a, b) != 0);
 }
 
-PG_FUNCTION_INFO_V1(complex_abs_ge);
+// 4. greater equal function
+PG_FUNCTION_INFO_V1(pname_greater_equal);
 
 Datum
-complex_abs_ge(PG_FUNCTION_ARGS)
+pname_greater_equal(PG_FUNCTION_ARGS)
 {
-	Complex    *a = (Complex *) PG_GETARG_POINTER(0);
-	Complex    *b = (Complex *) PG_GETARG_POINTER(1);
+	pName    *a = (pName *) PG_GETARG_POINTER(0);
+	pName    *b = (pName *) PG_GETARG_POINTER(1);
 
-	PG_RETURN_BOOL(complex_abs_cmp_internal(a, b) >= 0);
+	PG_RETURN_BOOL(compareNames(a, b) >= 0);
 }
 
-PG_FUNCTION_INFO_V1(complex_abs_gt);
+// 5. less function
+PG_FUNCTION_INFO_V1(pname_less);
 
 Datum
-complex_abs_gt(PG_FUNCTION_ARGS)
+pname_less(PG_FUNCTION_ARGS)
 {
-	Complex    *a = (Complex *) PG_GETARG_POINTER(0);
-	Complex    *b = (Complex *) PG_GETARG_POINTER(1);
+	pName    *a = (pName *) PG_GETARG_POINTER(0);
+	pName    *b = (pName *) PG_GETARG_POINTER(1);
 
-	PG_RETURN_BOOL(complex_abs_cmp_internal(a, b) > 0);
+	PG_RETURN_BOOL(compareNames(a, b) < 0);
 }
 
-PG_FUNCTION_INFO_V1(complex_abs_cmp);
+// 56. less equal function
+PG_FUNCTION_INFO_V1(pname_less_equal);
 
 Datum
-complex_abs_cmp(PG_FUNCTION_ARGS)
+pname_less_equal(PG_FUNCTION_ARGS)
 {
-	Complex    *a = (Complex *) PG_GETARG_POINTER(0);
-	Complex    *b = (Complex *) PG_GETARG_POINTER(1);
+	pName    *a = (pName *) PG_GETARG_POINTER(0);
+	pName    *b = (pName *) PG_GETARG_POINTER(1);
 
-	PG_RETURN_INT32(complex_abs_cmp_internal(a, b));
+	PG_RETURN_BOOL(compareNames(a, b) <= 0);
 }

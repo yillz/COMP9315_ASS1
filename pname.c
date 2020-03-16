@@ -80,9 +80,6 @@ pname_in(PG_FUNCTION_ARGS)
 	// scan the input string and set familyName, givenName
 	sscanf(NameIn, "%[A-Za-z' -]%[, ]%[A-Za-z' -]", familyName, punct, givenName);
 
-	// check if the given name start with a space
-	//givenName = removeFirstSpace(givenName);
-
 	// set new pname object's size , +2 for 2"\0"
 	int32 new_pname_size = strlen(familyName) + strlen(givenName) + 2;
 
@@ -92,9 +89,6 @@ pname_in(PG_FUNCTION_ARGS)
 	// set VARSIZE
 	SET_VARSIZE(result, VARHDRSZ + new_pname_size);
 
-	// memcopy
-	// memcpy(VARDATA(result), VARDATA_ANY(familyName), (strlen(familyName) + 1));
-	// memcpy(VARDATA(result) + strlen(familyName) + 1, VARDATA_ANY(givenName), (strlen(givenName) + 1));
 
 	// locate pointer
 	result->familyName = result + VARHDRSZ；
@@ -225,7 +219,7 @@ pname_hash(PG_FUNCTION_ARGS)
 	pfree(str);
 
 	/* Avoid leaking memory for toasted inputs */
-	PG_FREE_IF_COPY(txt, 0);
+	PG_FREE_IF_COPY(a, 0);
 	
 	PG_RETURN_DATUM(result);
 }
@@ -240,7 +234,7 @@ PG_FUNCTION_INFO_V1(family);
 
 Datum
 family(PG_FUNCTION_ARGS) {
-	pName *fullname = (pName *) PG_GETARG_POINTER(0);
+	PersonName *fullname = (PersonName *) PG_GETARG_POINTER(0);
 
 	char *family;
 	family = psprintf("%s", fullname->familyName);
@@ -251,7 +245,7 @@ PG_FUNCTION_INFO_V1(given);
 
 Datum
 given(PG_FUNCTION_ARGS) {
-	pName *fullname = (pName *) PG_GETARG_POINTER(0);
+	PersonName *fullname = (PersonName *) PG_GETARG_POINTER(0);
 
 	char *given;
 	given = psprintf("%s", fullname->givenName);
@@ -262,7 +256,7 @@ PG_FUNCTION_INFO_V1(show);
 
 Datum
 show(PG_FUNCTION_ARGS) {
-	pName *fullname = (pName *) PG_GETARG_POINTER(0);
+	PersonName *fullname = (PersonName *) PG_GETARG_POINTER(0);
 	char *showName;
 	char * firstGivenName;
 	char *delim = " ";

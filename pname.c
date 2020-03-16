@@ -67,8 +67,8 @@ Datum
 pname_in(PG_FUNCTION_ARGS)
 {
 	char *NameIn = PG_GETARG_CSTRING(0);
-	char familyName[100], 
-		 givenName[100],
+	char familyName[strlen(NameIn)], 
+		 givenName[strlen(NameIn)],
 		 punct[10];
 
 	if (checkName(NameIn) == false){

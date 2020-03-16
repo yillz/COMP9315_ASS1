@@ -123,17 +123,8 @@ pname_out(PG_FUNCTION_ARGS)
 
 
 /*****************************************************************************
- * Operator class for defining B-tree index
- *
- * It's essential that the comparison operators and support function for a
- * B-tree index opclass always agree on the relative ordering of any two
- * data values.  Experience has shown that it's depressingly easy to write
- * unintentionally inconsistent functions.  One way to reduce the odds of
- * making a mistake is to make all the functions simple wrappers around
- * an internal three-way-comparison function, as we do here.
+ * Operator define
  *****************************************************************************/
-
-// function to compare strings
 static int compareNames(PersonName *a, PersonName *b){
 	//waiting for Mark 
 	int result = strcmp(a->familyName, b->familyName);
@@ -216,6 +207,29 @@ pname_less_equal(PG_FUNCTION_ARGS)
 
 	PG_RETURN_BOOL(compareNames(a, b) <= 0);
 }
+
+/*****************************************************************************
+ * Hash function define
+ *****************************************************************************/
+PG_FUNCTION_INFO_V1(pname_hash);
+
+Datum
+pname_hash(PG_FUNCTION_ARGS)
+{
+	PersonName *a = (PersonName *) PG_GETARG_POINTER(0);
+	char       *str;
+	Datum      result;
+
+	str = psprintf("%s,%s", a->familyName, a->givenName);
+	result = hash_any((unsigned char *) str, strlen(str));
+	pfree(str);
+
+	/* Avoid leaking memory for toasted inputs */
+	PG_FREE_IF_COPY(txt, 0);
+	
+	PG_RETURN_DATUM(result);
+}
+
 
 
 /*****************************************************************************

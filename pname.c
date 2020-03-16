@@ -22,8 +22,7 @@ PG_MODULE_MAGIC;
 typedef struct pName
 {
     int length;
-	// can I use poniter here
-	// or familyName[] ?
+
 	char familyName[FLEXIBLE_ARRAY_MEMBER];
 	char givenName[FLEXIBLE_ARRAY_MEMBER];
 } pName;

@@ -216,3 +216,40 @@ pname_less_equal(PG_FUNCTION_ARGS)
 
 	PG_RETURN_BOOL(compareNames(a, b) <= 0);
 }
+
+
+/*****************************************************************************
+ * Functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(family);
+
+Datum
+family(PG_FUNCTION_ARGS) {
+	pName *fullname = (pName *) PG_GETARG_POINTER(0);
+
+	char *family;
+	family = psprintf("%s", fullname->familyName);
+	PG_RETURN_CSTRING(family);
+}
+
+PG_FUNCTION_INFO_V1(given);
+
+Datum
+given(PG_FUNCTION_ARGS) {
+	pName *fullname = (pName *) PG_GETARG_POINTER(0);
+
+	char *given;
+	given = psprintf("%s", fullname->givenName);
+	PG_RETURN_CSTRING(given);
+}
+
+PG_FUNCTION_INFO_V1(show);
+
+Datum
+show(PG_FUNCTION_ARGS) {
+	pName *fullname = (pName *) PG_GETARG_POINTER(0);
+	char *showName;
+	char *
+
+}

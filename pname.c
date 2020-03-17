@@ -12,6 +12,11 @@
 #include <regex.h>
 #include <string.h>
 
+// #include "catalog/pg_collation.h"
+// #include "utils/builtins.h"
+// #include "utils/formatting.h"
+#include "utils/hashutils.h"
+
 #include "postgres.h"
 #include "fmgr.h"
 #include "libpq/pqformat.h"		/* needed for send/recv functions */
@@ -82,7 +87,7 @@ pname_in(PG_FUNCTION_ARGS)
 
 	// locate pointer
 	result->familyName = result + VARHDRSZ；
-	result->givenName = result->familyName + strlen(familyName) + 1；
+	result->givenName = result->familyName + strlen(familyName) + 1;
 	
 	// copy familyName and givenName to result
 	strcpy(result->familyName, familyName);

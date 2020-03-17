@@ -2,7 +2,7 @@
  * pname.c
  * author1: Yinghong Zhong(z5233608)
  * author2: Shaowei Ma(z5238010)
- * version:1.3
+ * version:1.4
  * course: COMP9315
  * Item: Assignment1
 */
@@ -13,13 +13,7 @@
 #include <regex.h>
 #include <string.h>
 
-// #include "catalog/pg_collation.h"
-// #include "utils/builtins.h"
-// #include "utils/formatting.h"
-// #include "utils/hashutils.h"
 #include "access/hash.h"
-
-
 #include "fmgr.h"
 #include "libpq/pqformat.h"		/* needed for send/recv functions */
 #include "c.h"  // include felxable memory size
@@ -29,8 +23,7 @@ PG_MODULE_MAGIC;
 typedef struct PersonName
 {
     int length;
-	char *familyName;
-	char *givenName;
+	char pName[];
 } PersonName;
 
 
@@ -92,15 +85,14 @@ pname_in(PG_FUNCTION_ARGS)
 
 	// set VARSIZE
 	SET_VARSIZE(result, VARHDRSZ + new_pname_size);
-
-	// locate pointer
-	// PersonName *temp = result;
-	// result->familyName = result + VARHDRSZ;
-	result->givenName = result->familyName + strlen(familyName) + 1;
 	
 	// copy familyName and givenName to result
-	strcpy(result->familyName, familyName);
-	strcpy(result->givenName, givenName);
+	char *fname_pointer = result->pName;
+	char *gname_pointer = result->pName + strlen(familyName) + 1;
+	memcpy(fname_pointer, familyName, strlen(familyName) + 1)
+	memcpy(gname_pointer, givenName, strlen(givenName) + 1 );
+	//strcpy(result->familyName, familyName);
+	//strcpy(result->givenName, givenName);
 
 	pfree(familyName);
 	pfree(givenName);
@@ -118,7 +110,10 @@ pname_out(PG_FUNCTION_ARGS)
 	PersonName *fullname = (PersonName *) PG_GETARG_POINTER(0);
 	char  *result;
 
-	result = psprintf("%s,%s", fullname->familyName, fullname->givenName);
+	char *fname_pointer = fullname;
+	char *gname_pointer = fullname + strlen(fname_pointer) + 1;
+
+	result = psprintf("%s,%s", fname_pointer, gname_pointer);
 	PG_RETURN_CSTRING(result);
 }
 
@@ -130,12 +125,7 @@ pname_out(PG_FUNCTION_ARGS)
 static int 
 compareNames(PersonName *a, PersonName *b){
 	//waiting for Mark 
-	int result = strcmp(a->familyName, b->familyName);
-
-	if (result == 0){
-		result = strcmp(a->givenName, b->givenName);
-	}
-
+	int result = strcmp(a->pName, b->pName);
 	return result;
 }
 
@@ -234,7 +224,7 @@ family(PG_FUNCTION_ARGS) {
 	PersonName *fullname = (PersonName *) PG_GETARG_POINTER(0);
 
 	char *family;
-	family = psprintf("%s", fullname->familyName);
+	family = psprintf("%s", fullname->pName);
 	PG_RETURN_CSTRING(family);
 }
 
@@ -245,7 +235,7 @@ given(PG_FUNCTION_ARGS) {
 	PersonName *fullname = (PersonName *) PG_GETARG_POINTER(0);
 
 	char *given;
-	given = psprintf("%s", fullname->givenName);
+	given = psprintf("%s", fullname->pName + strlen(fullname->pName) + 1);
 	PG_RETURN_CSTRING(given);
 }
 
@@ -255,12 +245,16 @@ Datum
 show(PG_FUNCTION_ARGS) {
 	PersonName *fullname = (PersonName *) PG_GETARG_POINTER(0);
 	char *showName;
-	char * firstGivenName;
+	char *fullcopy;
+	char *firstGivenName;
 	char *delim = " ";
 
+	strcpy(fullcopy, fullname->pName);
+
 	//get the first given name
-	firstGivenName = strtok(fullname->givenName, delim); 
-	showName = psprintf("%s %s", firstGivenName, fullname->familyName);
+	firstGivenName = strtok(fullcopy + strlen(fullcopy) + 1, delim); 
+
+	showName = psprintf("%s %s", firstGivenName, fullname->pName);
 
 	PG_RETURN_CSTRING(showName);
 }
@@ -278,7 +272,10 @@ pname_hash(PG_FUNCTION_ARGS)
 	char       *str;
 	int32      result;
 
-	str = psprintf("%s,%s", a->familyName, a->givenName);
+	char *fname_pointer = a->pName;
+	char *gname_pointer = a->pName + strlen(a->pName) + 1;
+
+	str = psprintf("%s,%s", fname_pointer, gname_pointer);
 	result = DatumGetUInt32(hash_any((unsigned char *) str, strlen(str)));
 	pfree(str);
 

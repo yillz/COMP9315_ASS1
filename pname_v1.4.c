@@ -89,7 +89,7 @@ pname_in(PG_FUNCTION_ARGS)
 	// copy familyName and givenName to result
 	char *fname_pointer = result->pName;
 	char *gname_pointer = result->pName + strlen(familyName) + 1;
-	memcpy(fname_pointer, familyName, strlen(familyName) + 1)
+	memcpy(fname_pointer, familyName, strlen(familyName) + 1);
 	memcpy(gname_pointer, givenName, strlen(givenName) + 1 );
 	//strcpy(result->familyName, familyName);
 	//strcpy(result->givenName, givenName);

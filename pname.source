@@ -95,7 +95,7 @@ CREATE FUNCTION given(PersonName) RETURNS cstring
 CREATE FUNCTION show(PersonName) RETURNS cstring
 	AS '_OBJWD_/pname' LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION hash(PersonName) RETURNS datum
+CREATE FUNCTION hash(PersonName) RETURNS int4
 	AS '_OBJWD_/pname' LANGUAGE C IMMUTABLE STRICT;
 
 
@@ -105,12 +105,11 @@ CREATE OPERATOR CLASS pname_abs_ops --argument??
         OPERATOR        1       < ,
         OPERATOR        2       <= ,
         OPERATOR        3       = ,
-        OPERATOR        4       <> ,
-        OPERATOR        5       >= ,
-        OPERATOR        6       > ,
+        OPERATOR        4       >= ,
+        OPERATOR        5       > ,
         FUNCTION        1       pname_cmp(PersonName, PersonName);
 
 CREATE OPERATOR CLASS pname_hash_ops
     DEFAULT FOR TYPE PersonName USING hash AS
-        OPERATOR        1       = ,  --??
+        OPERATOR        1       = , 
         FUNCTION        1       hash(PersonName);

@@ -6,13 +6,20 @@
  * course: COMP9315
  * Item: Assignment1
 */
+#include "postgres.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <regex.h>
 #include <string.h>
 
-#include "postgres.h"
+// #include "catalog/pg_collation.h"
+// #include "utils/builtins.h"
+// #include "utils/formatting.h"
+// #include "utils/hashutils.h"
+#include "access/hash.h"
+
+
 #include "fmgr.h"
 #include "libpq/pqformat.h"		/* needed for send/recv functions */
 #include "c.h"  // include felxable memory size
@@ -58,8 +65,8 @@ Datum
 pname_in(PG_FUNCTION_ARGS)
 {
 	char *NameIn = PG_GETARG_CSTRING(0);
-	char familyName[strlen(NameIn)], 
-		 givenName[strlen(NameIn)],
+	char *familyName, 
+		 *givenName,
 		 punct[10];
 
 	if (checkName(NameIn) == false){
@@ -67,6 +74,11 @@ pname_in(PG_FUNCTION_ARGS)
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
 				 errmsg("invalid input syntax for type pname: \"%s\"", NameIn)));
 	}
+
+	// palloc familuname and givenname
+	familyName = palloc(strlen(NameIn)*sizeof(char));
+	givenName = palloc(strlen(NameIn)*sizeof(char));
+	
 
 	// scan the input string and set familyName, givenName
 	sscanf(NameIn, "%[A-Za-z' -]%[, ]%[A-Za-z' -]", familyName, punct, givenName);
@@ -81,12 +93,16 @@ pname_in(PG_FUNCTION_ARGS)
 	SET_VARSIZE(result, VARHDRSZ + new_pname_size);
 
 	// locate pointer
-	result->familyName = result + VARHDRSZ；
-	result->givenName = result->familyName + strlen(familyName) + 1；
+	result->familyName = result + VARHDRSZ;
+	result->givenName = result->familyName + strlen(familyName) + 1;
 	
 	// copy familyName and givenName to result
 	strcpy(result->familyName, familyName);
 	strcpy(result->givenName, givenName);
+
+	pfree(familyName);
+	pfree(givenName);
+
 	PG_RETURN_POINTER(result);
 }
 
@@ -194,7 +210,7 @@ pname_greater_equal(PG_FUNCTION_ARGS)
 }
 
 // 7.compare function
-PG_FUNCTION_INFO_V1(pname_cmp)
+PG_FUNCTION_INFO_V1(pname_cmp);
 
 Datum
 pname_cmp(PG_FUNCTION_ARGS) 
@@ -258,14 +274,14 @@ hash(PG_FUNCTION_ARGS)
 {
 	PersonName *a = (PersonName *) PG_GETARG_POINTER(0);
 	char       *str;
-	Datum      result;
+	int32      result;
 
 	str = psprintf("%s,%s", a->familyName, a->givenName);
-	result = hash_any((unsigned char *) str, strlen(str));
+	result = DatumGetUInt32(hash_any((unsigned char *) str, strlen(str)));
 	pfree(str);
 
 	/* Avoid leaking memory for toasted inputs */
 	PG_FREE_IF_COPY(a, 0);
 	
-	PG_RETURN_DATUM(result);
+	PG_RETURN_INT32(result);
 }

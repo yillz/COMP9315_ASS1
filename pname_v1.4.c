@@ -110,8 +110,8 @@ pname_out(PG_FUNCTION_ARGS)
 	PersonName *fullname = (PersonName *) PG_GETARG_POINTER(0);
 	char  *result;
 
-	char *fname_pointer = fullname;
-	char *gname_pointer = fullname + strlen(fname_pointer) + 1;
+	char *fname_pointer = fullname->pName; 
+	char *gname_pointer = fullname->pName + strlen(fname_pointer) + 1;
 
 	result = psprintf("%s,%s", fname_pointer, gname_pointer);
 	PG_RETURN_CSTRING(result);
@@ -125,7 +125,10 @@ pname_out(PG_FUNCTION_ARGS)
 static int 
 compareNames(PersonName *a, PersonName *b){
 	//waiting for Mark 
-	int result = strcmp(a->pName, b->pName);
+	int result = strcmp(a->pName, b->pName); 
+	if (result == 0) {
+		result = strcmp(a->pName + strlen(a->pName) + 1, b->pName + strlen(b->pName) + 1);
+	}
 	return result;
 }
 

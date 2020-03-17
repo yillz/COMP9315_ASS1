@@ -44,7 +44,8 @@ checkName(char *name){
 	const char *pattern = "^[A-Z]([A-Za-z]|[-|'])+([ ][A-Z]([A-Za-z]|[-|'])+)*,[ ]?[A-Z]([A-Za-z]|[-|'])+([ ][A-Z]([A-Za-z]|[-|'])+)*$";
 	regcomp(&reg, pattern, cflags);
 	
-	int status = regexec(&reg, name, 0, NULL, 0);
+	int status;
+	status = regexec(&reg, name, 0, NULL, 0);
 	
 	if (status != 0){
 		ret = false;
@@ -270,7 +271,7 @@ show(PG_FUNCTION_ARGS) {
 PG_FUNCTION_INFO_V1(pname_hash);
 
 Datum
-hash(PG_FUNCTION_ARGS)
+pname_hash(PG_FUNCTION_ARGS)
 {
 	PersonName *a = (PersonName *) PG_GETARG_POINTER(0);
 	char       *str;

@@ -42,7 +42,7 @@ checkName(char *name){
 	if (status != 0){
 		ret = false;
 	}
-	regfree(&regex);
+	regfree(&reg);
 	return ret;
 }
 

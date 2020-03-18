@@ -23,6 +23,8 @@ PG_MODULE_MAGIC;
 typedef struct PersonName
 {
     int length;
+	int fsize;
+	int gsize;
 	char pName[];
 } PersonName;
 
@@ -77,25 +79,21 @@ pname_in(PG_FUNCTION_ARGS)
 	// scan the input string and set familyName, givenName
 	sscanf(NameIn, "%[A-Za-z' -]%[, ]%[A-Za-z' -]", familyName, punct, givenName);
 
-	// set new pname object's size , +2 for 2"\0"
-	int32 new_pname_size = strlen(familyName) + strlen(givenName) + 2;
+	// set new pname object's size , +2 for 2"\0" 
+	int32 new_pname_size = strlen(familyName) + strlen(givenName) + 2 + 2*sizeof(int);
 
 	// assign memory to result
 	PersonName *result = (PersonName *)palloc(VARHDRSZ + new_pname_size);
+	result->fsize = strlen(familyName) + 1;
+	result->gsize = strlen(givenName) + 1;
 
 	// set VARSIZE
 	SET_VARSIZE(result, VARHDRSZ + new_pname_size);
 	
 	// copy familyName and givenName to result
-	char *fname_pointer = result->pName;
-	char *gname_pointer = result->pName + strlen(familyName) + 1;
-
-	memcpy(fname_pointer, familyName, strlen(familyName) + 1);
-	memcpy(gname_pointer, givenName, strlen(givenName) + 1 );
+	memcpy(result->pName, familyName, result->fsize);
+	memcpy(result->pName + result->fsize, givenName, result->gsize);
 	
-	//strcpy(result->familyName, familyName);
-	//strcpy(result->givenName, givenName);
-
 	pfree(familyName);
 	pfree(givenName);
 
@@ -112,10 +110,7 @@ pname_out(PG_FUNCTION_ARGS)
 	PersonName *fullname = (PersonName *) PG_GETARG_POINTER(0);
 	char  *result;
 
-	char *fname_pointer = fullname->pName; 
-	char *gname_pointer = fullname->pName + strlen(fname_pointer) + 1;
-
-	result = psprintf("%s,%s", fname_pointer, gname_pointer);
+	result = psprintf("%s,%s", fullname->pName, fullname->pName + fullname->fsize);
 	PG_RETURN_CSTRING(result);
 }
 
@@ -129,7 +124,7 @@ compareNames(PersonName *a, PersonName *b){
 	//waiting for Mark 
 	int result = strcmp(a->pName, b->pName); 
 	if (result == 0) {
-		result = strcmp(a->pName + strlen(a->pName) + 1, b->pName + strlen(b->pName) + 1);
+		result = strcmp(a->pName + a->fsize, b->pName + b->fsize);
 	}
 	return result;
 }
@@ -222,70 +217,70 @@ pname_cmp(PG_FUNCTION_ARGS)
  * Functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(family);
+// PG_FUNCTION_INFO_V1(family);
 
-Datum
-family(PG_FUNCTION_ARGS) {
-	PersonName *fullname = (PersonName *) PG_GETARG_POINTER(0);
+// Datum
+// family(PG_FUNCTION_ARGS) {
+// 	PersonName *fullname = (PersonName *) PG_GETARG_POINTER(0);
 
-	char *family;
-	family = psprintf("%s", fullname->pName);
-	PG_RETURN_CSTRING(family);
-}
+// 	char *family;
+// 	family = psprintf("%s", fullname->pName);
+// 	PG_RETURN_CSTRING(family);
+// }
 
-PG_FUNCTION_INFO_V1(given);
+// PG_FUNCTION_INFO_V1(given);
 
-Datum
-given(PG_FUNCTION_ARGS) {
-	PersonName *fullname = (PersonName *) PG_GETARG_POINTER(0);
+// Datum
+// given(PG_FUNCTION_ARGS) {
+// 	PersonName *fullname = (PersonName *) PG_GETARG_POINTER(0);
 
-	char *given;
-	given = psprintf("%s", fullname->pName + strlen(fullname->pName) + 1);
-	PG_RETURN_CSTRING(given);
-}
+// 	char *given;
+// 	given = psprintf("%s", fullname->pName + strlen(fullname->pName) + 1);
+// 	PG_RETURN_CSTRING(given);
+// }
 
-PG_FUNCTION_INFO_V1(show);
+// PG_FUNCTION_INFO_V1(show);
 
-Datum
-show(PG_FUNCTION_ARGS) {
-	PersonName *fullname = (PersonName *) PG_GETARG_POINTER(0);
-	char *showName;
-	char *fullcopy;
-	char *firstGivenName;
-	char *delim = " ";
+// Datum
+// show(PG_FUNCTION_ARGS) {
+// 	PersonName *fullname = (PersonName *) PG_GETARG_POINTER(0);
+// 	char *showName;
+// 	char *fullcopy;
+// 	char *firstGivenName;
+// 	char *delim = " ";
 
-	strcpy(fullcopy, fullname->pName);
+// 	strcpy(fullcopy, fullname->pName);
 
-	//get the first given name
-	firstGivenName = strtok(fullcopy + strlen(fullcopy) + 1, delim); 
+// 	//get the first given name
+// 	firstGivenName = strtok(fullcopy + strlen(fullcopy) + 1, delim); 
 
-	showName = psprintf("%s %s", firstGivenName, fullname->pName);
+// 	showName = psprintf("%s %s", firstGivenName, fullname->pName);
 
-	PG_RETURN_CSTRING(showName);
-}
+// 	PG_RETURN_CSTRING(showName);
+// }
 
 
-/*****************************************************************************
- * Hash function define
- *****************************************************************************/
-PG_FUNCTION_INFO_V1(pname_hash);
+// /*****************************************************************************
+//  * Hash function define
+//  *****************************************************************************/
+// PG_FUNCTION_INFO_V1(pname_hash);
 
-Datum
-pname_hash(PG_FUNCTION_ARGS)
-{
-	PersonName *a = (PersonName *) PG_GETARG_POINTER(0);
-	char       *str;
-	int32      result;
+// Datum
+// pname_hash(PG_FUNCTION_ARGS)
+// {
+// 	PersonName *a = (PersonName *) PG_GETARG_POINTER(0);
+// 	char       *str;
+// 	int32      result;
 
-	char *fname_pointer = a->pName;
-	char *gname_pointer = a->pName + strlen(a->pName) + 1;
+// 	char *fname_pointer = a->pName;
+// 	char *gname_pointer = a->pName + strlen(a->pName) + 1;
 
-	str = psprintf("%s,%s", fname_pointer, gname_pointer);
-	result = DatumGetUInt32(hash_any((unsigned char *) str, strlen(str)));
-	pfree(str);
+// 	str = psprintf("%s,%s", fname_pointer, gname_pointer);
+// 	result = DatumGetUInt32(hash_any((unsigned char *) str, strlen(str)));
+// 	pfree(str);
 
-	/* Avoid leaking memory for toasted inputs */
-	PG_FREE_IF_COPY(a, 0);
+// 	/* Avoid leaking memory for toasted inputs */
+// 	PG_FREE_IF_COPY(a, 0);
 	
-	PG_RETURN_INT32(result);
-}
+// 	PG_RETURN_INT32(result);
+// }

@@ -19,10 +19,10 @@ CREATE FUNCTION pname_out(PersonName)
    LANGUAGE C IMMUTABLE STRICT;
 
 CREATE TYPE PersonName (
-   internallength = variable,
+   internallength = 16,
    input = pname_in,
    output = pname_out,
-   -- alignment = double  --???
+   alignment = double  --???
 );
 
 
@@ -83,20 +83,20 @@ CREATE OPERATOR >= (
 
 
 -- create the support function
-CREATE FUNCTION pname_cmp(PersonName, PersonName) RETURNS int4
-   AS '_OBJWD_/pname' LANGUAGE C IMMUTABLE STRICT;
+--CREATE FUNCTION pname_cmp(PersonName, PersonName) RETURNS int4
+--   AS '_OBJWD_/pname' LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION family(PersonName) RETURNS cstring
-	AS '_OBJWD_/pname' LANGUAGE C IMMUTABLE STRICT;
+--CREATE FUNCTION family(PersonName) RETURNS cstring
+--	AS '_OBJWD_/pname' LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION given(PersonName) RETURNS cstring
-	AS '_OBJWD_/pname' LANGUAGE C IMMUTABLE STRICT;
+--CREATE FUNCTION given(PersonName) RETURNS cstring
+--	AS '_OBJWD_/pname' LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION show(PersonName) RETURNS cstring
-	AS '_OBJWD_/pname' LANGUAGE C IMMUTABLE STRICT;
+--CREATE FUNCTION show(PersonName) RETURNS cstring
+--	AS '_OBJWD_/pname' LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION pname_hash(PersonName) RETURNS int4
-	AS '_OBJWD_/pname' LANGUAGE C IMMUTABLE STRICT;
+--CREATE FUNCTION pname_hash(PersonName) RETURNS int4
+--	AS '_OBJWD_/pname' LANGUAGE C IMMUTABLE STRICT;
 
 
 -- make the operator class  
@@ -109,7 +109,7 @@ CREATE OPERATOR CLASS pname_abs_ops --argument??
         OPERATOR        5       > ,
         FUNCTION        1       pname_cmp(PersonName, PersonName);
 
-CREATE OPERATOR CLASS pname_hash_ops
-    DEFAULT FOR TYPE PersonName USING hash AS
-        OPERATOR        1       = , 
-        FUNCTION        1       pname_hash(PersonName);
+--CREATE OPERATOR CLASS pname_hash_ops
+--    DEFAULT FOR TYPE PersonName USING hash AS
+--        OPERATOR        1       = , 
+--        FUNCTION        1       pname_hash(PersonName);

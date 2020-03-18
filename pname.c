@@ -73,7 +73,7 @@ pname_in(PG_FUNCTION_ARGS)
 	familyName = palloc(strlen(NameIn)*sizeof(char));
 	givenName = palloc(strlen(NameIn)*sizeof(char));
 
-	// scan the input string and set familyName, givenName
+	// use regular expression to scan the input string and set familyName, givenName
 	sscanf(NameIn, "%[A-Za-z' -]%[, ]%[A-Za-z' -]", familyName, punct, givenName);
 
 	// set new pname object's size , +2 for 2"\0"
@@ -85,9 +85,9 @@ pname_in(PG_FUNCTION_ARGS)
 	// set VARSIZE
 	SET_VARSIZE(result, VARHDRSZ + new_pname_size);
 	
-	// copy familyName and givenName to result
+	// navigate the pointer of familyName and givenName in result 
 	char *fname_pointer = result->pName;
-	char *gname_pointer = result->pName + strlen(familyName) + 1;
+	char *gname_pointer = result->pName + strlen(familyName) + 1; //using '\0' as the delimeter
 
 	memcpy(fname_pointer, familyName, strlen(familyName) + 1);
 	memcpy(gname_pointer, givenName, strlen(givenName) + 1 );
@@ -122,9 +122,9 @@ pname_out(PG_FUNCTION_ARGS)
  *****************************************************************************/
 static int 
 compareNames(PersonName *a, PersonName *b){
-	//waiting for Mark 
+	//compare family first
 	int result = strcmp(a->pName, b->pName); 
-	if (result == 0) {
+	if (result == 0) { // compare given name
 		result = strcmp(a->pName + strlen(a->pName) + 1, b->pName + strlen(b->pName) + 1);
 	}
 	return result;
@@ -252,9 +252,10 @@ show(PG_FUNCTION_ARGS) {
 	char *firstGivenName;
 	char *delim = " ";
 
+	//copy the given name
 	givenNameCopy = psprintf("%s",fullname->pName + strlen(fullname->pName) + 1);
 
-	//get the first given name
+	//get the first given name using " " as the delimeter
 	firstGivenName = strtok(givenNameCopy, delim); 
 
 	showName = psprintf("%s %s", firstGivenName, fullname->pName);

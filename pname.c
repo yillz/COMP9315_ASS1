@@ -2,7 +2,7 @@
  * pname.c
  * author1: Yinghong Zhong(z5233608)
  * author2: Shaowei Ma(z5238010)
- * version:2.0
+ * version:2.1(3-18)
  * course: COMP9315
  * Item: Assignment1
 */
@@ -15,7 +15,7 @@
 
 #include "access/hash.h"
 #include "fmgr.h"
-#include "libpq/pqformat.h"		/* needed for send/recv functions */
+#include "libpq/pqformat.h"		
 #include "c.h"  // include felxable memory size
 
 PG_MODULE_MAGIC;
@@ -72,7 +72,6 @@ pname_in(PG_FUNCTION_ARGS)
 	// palloc familuname and givenname
 	familyName = palloc(strlen(NameIn)*sizeof(char));
 	givenName = palloc(strlen(NameIn)*sizeof(char));
-	
 
 	// scan the input string and set familyName, givenName
 	sscanf(NameIn, "%[A-Za-z' -]%[, ]%[A-Za-z' -]", familyName, punct, givenName);
@@ -92,9 +91,6 @@ pname_in(PG_FUNCTION_ARGS)
 
 	memcpy(fname_pointer, familyName, strlen(familyName) + 1);
 	memcpy(gname_pointer, givenName, strlen(givenName) + 1 );
-	
-	//strcpy(result->familyName, familyName);
-	//strcpy(result->givenName, givenName);
 
 	pfree(familyName);
 	pfree(givenName);
@@ -222,7 +218,6 @@ pname_cmp(PG_FUNCTION_ARGS)
  * Functions
  *****************************************************************************/
 
-
 PG_FUNCTION_INFO_V1(family);
 
 Datum
@@ -231,7 +226,8 @@ family(PG_FUNCTION_ARGS) {
 
 	char *family;
 	family = psprintf("%s", fullname->pName);
-	PG_RETURN_CSTRING(family);
+
+	PG_RETURN_TEXT_P(cstring_to_text(family));
 }
 
 PG_FUNCTION_INFO_V1(given);
@@ -242,7 +238,8 @@ given(PG_FUNCTION_ARGS) {
 
 	char *given;
 	given = psprintf("%s", fullname->pName + strlen(fullname->pName) + 1);
-	PG_RETURN_CSTRING(given);
+
+	PG_RETURN_TEXT_P(cstring_to_text(given));
 }
 
 PG_FUNCTION_INFO_V1(show);
@@ -262,7 +259,7 @@ show(PG_FUNCTION_ARGS) {
 
 	showName = psprintf("%s %s", firstGivenName, fullname->pName);
 
-	PG_RETURN_CSTRING(showName);
+	PG_RETURN_TEXT_P(cstring_to_text(showName));
 }
 
 

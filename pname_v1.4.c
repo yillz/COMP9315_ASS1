@@ -66,7 +66,7 @@ pname_in(PG_FUNCTION_ARGS)
 	if (checkName(NameIn) == false){
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-				 errmsg("invalid input syntax for type pname: \"%s\"", NameIn)));
+				 errmsg("invalid input syntax for type PersonName: \"%s\"", NameIn)));
 	}
 
 	// palloc familuname and givenname

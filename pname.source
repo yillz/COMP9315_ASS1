@@ -22,7 +22,6 @@ CREATE TYPE PersonName (
    internallength = variable,
    input = pname_in,
    output = pname_out
-   -- alignment = double  --???
 );
 
 

@@ -2,7 +2,7 @@
  * pname.c
  * author1: Yinghong Zhong(z5233608)
  * author2: Shaowei Ma(z5238010)
- * version:1.4
+ * version:2.0
  * course: COMP9315
  * Item: Assignment1
 */
@@ -222,6 +222,7 @@ pname_cmp(PG_FUNCTION_ARGS)
  * Functions
  *****************************************************************************/
 
+
 PG_FUNCTION_INFO_V1(family);
 
 Datum
@@ -250,14 +251,14 @@ Datum
 show(PG_FUNCTION_ARGS) {
 	PersonName *fullname = (PersonName *) PG_GETARG_POINTER(0);
 	char *showName;
-	char *fullcopy;
+	char *givenNameCopy;
 	char *firstGivenName;
 	char *delim = " ";
 
-	strcpy(fullcopy, fullname->pName);
+	givenNameCopy = psprintf("%s",fullname->pName + strlen(fullname->pName) + 1);
 
 	//get the first given name
-	firstGivenName = strtok(fullcopy + strlen(fullcopy) + 1, delim); 
+	firstGivenName = strtok(givenNameCopy, delim); 
 
 	showName = psprintf("%s %s", firstGivenName, fullname->pName);
 

@@ -69,7 +69,7 @@ pname_in(PG_FUNCTION_ARGS)
 				 errmsg("invalid input syntax for type PersonName: \"%s\"", NameIn)));
 	}
 
-	// palloc familuname and givenname
+	// palloc temporary familyname and givenname
 	familyName = palloc(strlen(NameIn)*sizeof(char));
 	givenName = palloc(strlen(NameIn)*sizeof(char));
 
@@ -89,17 +89,20 @@ pname_in(PG_FUNCTION_ARGS)
 	char *fname_pointer = result->pName;
 	char *gname_pointer = result->pName + strlen(familyName) + 1; //using '\0' as the delimeter
 
+	// copy memory to the destination pointer
 	memcpy(fname_pointer, familyName, strlen(familyName) + 1);
 	memcpy(gname_pointer, givenName, strlen(givenName) + 1 );
-
+	
+	// pfree temporary familyname and givenname
 	pfree(familyName);
 	pfree(givenName);
-
+	
+	// return the final result
 	PG_RETURN_POINTER(result);
 }
 
 
-// output function
+// Output function
 PG_FUNCTION_INFO_V1(pname_out);
 
 Datum
@@ -108,9 +111,11 @@ pname_out(PG_FUNCTION_ARGS)
 	PersonName *fullname = (PersonName *) PG_GETARG_POINTER(0);
 	char  *result;
 
+	// navigate the pointer of familyName and givenName in result 
 	char *fname_pointer = fullname->pName; 
 	char *gname_pointer = fullname->pName + strlen(fname_pointer) + 1;
 
+	// psprintf the familyname and givenname to result and then return
 	result = psprintf("%s,%s", fname_pointer, gname_pointer);
 	PG_RETURN_CSTRING(result);
 }
@@ -124,13 +129,14 @@ static int
 compareNames(PersonName *a, PersonName *b){
 	//compare family first
 	int result = strcmp(a->pName, b->pName); 
-	if (result == 0) { // compare given name
+	if (result == 0) { 
+		// if familyname same then compare given name
 		result = strcmp(a->pName + strlen(a->pName) + 1, b->pName + strlen(b->pName) + 1);
 	}
 	return result;
 }
 
-// 1. less function
+// 1. Less function
 PG_FUNCTION_INFO_V1(pname_less);
 
 Datum
@@ -142,7 +148,7 @@ pname_less(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(compareNames(a, b) < 0);
 }
 
-// 2. less equal function
+// 2. Less equal function
 PG_FUNCTION_INFO_V1(pname_less_equal);
 
 Datum
@@ -166,7 +172,7 @@ pname_equal(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(compareNames(a, b) == 0);
 }
 
-// 4. not equal function
+// 4. Not equal function
 PG_FUNCTION_INFO_V1(pname_not_equal);
 
 Datum
@@ -190,7 +196,7 @@ pname_greater(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(compareNames(a, b) > 0);
 }
 
-// 6. greater equal function
+// 6. Greater equal function
 PG_FUNCTION_INFO_V1(pname_greater_equal);
 
 Datum
@@ -202,7 +208,7 @@ pname_greater_equal(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(compareNames(a, b) >= 0);
 }
 
-// 7.compare function
+// 7.Compare function
 PG_FUNCTION_INFO_V1(pname_cmp);
 
 Datum
@@ -225,6 +231,7 @@ family(PG_FUNCTION_ARGS) {
 	PersonName *fullname = (PersonName *) PG_GETARG_POINTER(0);
 
 	char *family;
+	// fullname->pName point to head of familyname
 	family = psprintf("%s", fullname->pName);
 
 	PG_RETURN_TEXT_P(cstring_to_text(family));
@@ -237,6 +244,7 @@ given(PG_FUNCTION_ARGS) {
 	PersonName *fullname = (PersonName *) PG_GETARG_POINTER(0);
 
 	char *given;
+	// fullname->pName + strlen(fullname->pName) + 1 point to head of givenname 
 	given = psprintf("%s", fullname->pName + strlen(fullname->pName) + 1);
 
 	PG_RETURN_TEXT_P(cstring_to_text(given));
@@ -252,7 +260,7 @@ show(PG_FUNCTION_ARGS) {
 	char *firstGivenName;
 	char *delim = " ";
 
-	//copy the given name
+	//copy the given name because strtok() will destroy the original string
 	givenNameCopy = psprintf("%s",fullname->pName + strlen(fullname->pName) + 1);
 
 	//get the first given name using " " as the delimeter
@@ -283,7 +291,7 @@ pname_hash(PG_FUNCTION_ARGS)
 	result = DatumGetUInt32(hash_any((unsigned char *) str, strlen(str)));
 	pfree(str);
 
-	/* Avoid leaking memory for toasted inputs */
+	// Avoid leaking memory for toasted inputs
 	PG_FREE_IF_COPY(a, 0);
 	
 	PG_RETURN_INT32(result);
